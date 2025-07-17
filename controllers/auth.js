@@ -13,13 +13,14 @@ const handleSignUp = async (req, res, db, bcrypt) => {
                     joined: new Date()
                 })
                 .returning(['id', 'email', 'name', 'joined']);
-            return users[0];
+            return (users[0]);
         })
 
+        console.log(`Signed up for ${email}!`);
         return res.json(newUser);
     } catch (err) {
         console.log(err);
-        res.status(400).json(`Failed to register ${email}`);
+        return res.status(400).json(`Failed to register ${email}`);
     }
 }
 
@@ -27,26 +28,27 @@ const handleLogin = async (req, res, db, bcrypt) => {
     const { email, password } = req.body;
 
     try {
-        const users = db.select("email", "pw_hash")
+        // Get user with email
+        const users = await db.select("email", "pw_hash", "name")
             .from("users")
             .where("email", "=", email);
-        if (users.length === 0) {
-            return res.status(400).json("Incorrect email or password");
+        if (!users || users.length === 0) {
+            return res.status(400).json({ error: "Incorrect email or password." });
         }
 
+        // Check password
         const isValid = await bcrypt.compare(password, users[0].pw_hash);
         if (!isValid) {
-            return res.status(400).json("Incorrect email or password");
+            return res.status(400).json({ error: "Incorrect email or password." });
         }
 
-        const user = db.select("email, name")
-            .from("users")
-            .where("email", "=", email);
-
-        return res.json(user[0]);
+        // Only return safe user info
+        const { email, name } = users[0];
+        console.log(`Logged in for ${email}!`);
+        return res.json({ email: userEmail, name });
     } catch (err) {
-        console.log(err);
-        return res.status(500).json("Internal server error");
+        console.error("Login error:", err);
+        return res.status(500).json({ error: "Internal server error." });
     }
 }
 
