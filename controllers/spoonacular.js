@@ -34,6 +34,10 @@ const getRecipe = async (req, res) => {
         console.log(data);
         return res.json(data);
     } catch (err) {
+        console.log({ 
+            source: "spoonacular.js",
+            error: err
+        })
         return res.status(400).json({ error: err});
     }
 };

@@ -25,19 +25,19 @@ const handleSignUp = async (req, res, db, bcrypt) => {
 }
 
 const handleLogin = async (req, res, db, bcrypt) => {
-    const { email, password } = req.body;
+    const { inputEmail, inputPassword } = req.body;
 
     try {
         // Get user with email
         const users = await db.select("email", "pw_hash", "name")
             .from("users")
-            .where("email", "=", email);
+            .where("email", "=", inputEmail);
         if (!users || users.length === 0) {
             return res.status(400).json({ error: "Incorrect email or password." });
         }
 
         // Check password
-        const isValid = await bcrypt.compare(password, users[0].pw_hash);
+        const isValid = await bcrypt.compare(inputPassword, users[0].pw_hash);
         if (!isValid) {
             return res.status(400).json({ error: "Incorrect email or password." });
         }
@@ -45,7 +45,7 @@ const handleLogin = async (req, res, db, bcrypt) => {
         // Only return safe user info
         const { email, name } = users[0];
         console.log(`Logged in for ${email}!`);
-        return res.json({ email: userEmail, name });
+        return res.json({ email: email, name });
     } catch (err) {
         console.error("Login error:", err);
         return res.status(500).json({ error: "Internal server error." });
