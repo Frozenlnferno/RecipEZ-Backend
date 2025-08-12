@@ -35,7 +35,8 @@ import auth from "./controllers/auth.js";
 app.post('/auth/signup', async (req, res) => auth.signUp(req, res, db, bcrypt));
 app.post('/auth/login', async (req, res) => auth.login(req, res, db, bcrypt));
 app.get('/api/get_random_recipes/:count', async (req, res) => spoon.getRandomRecipes(req, res));
-app.get('/api/get_recipe/:id', async (req, res) => spoon.getRecipe(req, res));
+app.get('/api/get_recipe/:id', async (req, res) => spoon.getRecipeById(req, res));
+app.post("/api/search_recipe", async (req, res) => spoon.complexRecipeSearch(req, res));
 
 app.listen(env.PORT, () => {
     console.log(`Server running on port ${env.PORT}`);
