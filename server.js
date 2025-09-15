@@ -17,7 +17,7 @@ const db = knex({
         user: env.DB_USER,
         password: env.DB_PASSWORD,
         database: env.DB_DATABASE,
-        ssl: false,
+        ssl: { rejectUnauthorized: false },
     },
 });
 
@@ -37,6 +37,11 @@ import spoon from "./controllers/spoonacular.js";
 import auth from "./controllers/auth.js";
 import database from "./controllers/database.js";
 
+app.get('/', (req, res) => {
+    res.send("Server is running");
+});
+
+// Routes
 app.post('/auth/signup', async (req, res) => auth.signUp(req, res, db, bcrypt));
 app.post('/auth/login', async (req, res) => auth.login(req, res, db, bcrypt));
 app.get('/api/get_random_recipes/:count', async (req, res) => spoon.getRandomRecipes(req, res));
@@ -44,7 +49,7 @@ app.get('/api/get_recipe/:id', async (req, res) => spoon.getRecipeById(req, res)
 app.post("/api/search_recipe", async (req, res) => spoon.complexRecipeSearch(req, res));
 app.post("/db/get_favorites", async (req, res) => database.getFavorites(req, res, db));
 app.post("/db/add_favorite", async (req, res) => database.addFavorite(req, res, db));
-app.post("/db/remove_favorite", async (req, res) => database.addFavorite(req, res, db));
+app.post("/db/remove_favorite", async (req, res) => database.removeFavorite(req, res, db));
 
 app.listen(env.PORT, () => {
     console.log(`Server running on port ${env.PORT}`);
