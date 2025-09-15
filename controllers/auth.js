@@ -4,17 +4,12 @@ const handleSignUp = async (req, res, db, bcrypt) => {
 
     try {
         const pw_hash = await bcrypt.hash(password, saltRounds);
-        const newUser = await db.transaction(async trx => {
-            const users = await trx('users')
-                .insert({
-                    name,
-                    pw_hash,
-                    email,
-                    joined: new Date()
-                })
-                .returning(['id', 'email', 'name', 'joined']);
-            return (users[0]);
-        })
+        const [newUser] = await db("users").insert({
+            name,
+            pw_hash,
+            email,
+            joined: new Date()
+        }).returning(['id', 'email', 'name']);
 
         console.log(`Signed up for ${email}!`);
         return res.json(newUser);
@@ -29,23 +24,23 @@ const handleLogin = async (req, res, db, bcrypt) => {
 
     try {
         // Get user with email
-        const users = await db.select("email", "pw_hash", "name")
+        const [user] = await db.select("email", "pw_hash", "name", "id")
             .from("users")
             .where("email", "=", inputEmail);
-        if (!users || users.length === 0) {
+        if (!user) {
             return res.status(400).json({ error: "Incorrect email or password." });
         }
 
         // Check password
-        const isValid = await bcrypt.compare(inputPassword, users[0].pw_hash);
+        const isValid = await bcrypt.compare(inputPassword, user.pw_hash);
         if (!isValid) {
             return res.status(400).json({ error: "Incorrect email or password." });
         }
 
         // Only return safe user info
-        const { email, name } = users[0];
+        const { email, name, id } = user;
         console.log(`Logged in for ${email}!`);
-        return res.json({ email: email, name });
+        return res.json({ id, email, name });
     } catch (err) {
         console.error("Login error:", err);
         return res.status(500).json({ error: "Internal server error." });

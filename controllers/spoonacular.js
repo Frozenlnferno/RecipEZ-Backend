@@ -43,7 +43,6 @@ const getRecipeById = async (req, res) => {
 
 const complexRecipeSearch = async (req, res) => {
     const { filters } = req.body;
-    const { query, type, cuisine, diet, intolerances, maxReadyTime } = filters;
     
     try {
         const response = await fetch(queryHelper.buildSpoonUrl(
@@ -61,7 +60,7 @@ const complexRecipeSearch = async (req, res) => {
             source: "spoonacular.js",
             error: err
         })
-        return res.status(400).json({ error: err});
+        return res.status(400).json({ error: err.message });
     }
 };
 
