@@ -8,7 +8,6 @@ const handleSignUp = async (req, res, db, bcrypt) => {
             name,
             pw_hash,
             email,
-            joined: new Date()
         }).returning(['id', 'email', 'name']);
 
         console.log(`Signed up for ${email}!`);
