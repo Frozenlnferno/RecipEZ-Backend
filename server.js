@@ -10,16 +10,6 @@ const app = express();
 const env = process.env;
 
 const buildPgConnection = () => {
-    // This part is for deployment. 
-    if (process.env.DATABASE_URL) {
-        const conn = { connectionString: process.env.DATABASE_URL };
-        if (process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production') {
-            conn.ssl = { rejectUnauthorized: false };
-        }
-        return conn;
-    }
-    //
-
     const conn = {
         host: process.env.DB_HOST,
         port: process.env.DB_PORT,
@@ -28,6 +18,7 @@ const buildPgConnection = () => {
         database: process.env.DB_DATABASE,
     };
 
+    // This makes sure pgadmin works and neon can connect
     if (process.env.DB_SSL === 'true') {
     conn.ssl = { rejectUnauthorized: false };
     }
