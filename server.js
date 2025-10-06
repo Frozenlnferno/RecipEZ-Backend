@@ -9,16 +9,36 @@ dotenv.config();
 const app = express();
 const env = process.env;
 
+const buildPgConnection = () => {
+    // This part is for deployment. 
+    if (process.env.DATABASE_URL) {
+        const conn = { connectionString: process.env.DATABASE_URL };
+        if (process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production') {
+            conn.ssl = { rejectUnauthorized: false };
+        }
+        return conn;
+    }
+    //
+
+    const conn = {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_DATABASE,
+    };
+
+    if (process.env.DB_SSL === 'true') {
+    conn.ssl = { rejectUnauthorized: false };
+    }
+
+    return conn;
+};
+
 const db = knex({
     client: 'pg',
-    connection: {
-        host: env.DB_HOST,
-        port: env.DB_PORT,
-        user: env.DB_USER,
-        password: env.DB_PASSWORD,
-        database: env.DB_DATABASE,
-        ssl: { rejectUnauthorized: false },
-    },
+    connection: buildPgConnection(),
+    pool: { min: 0, max: 10 },
 });
 
 if (!db) {

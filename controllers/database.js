@@ -19,7 +19,7 @@ const removeFavorite = async (req, res, db) => {
         if (!user_id || !recipe_id) {
             return res.status(400).json('User ID and Recipe ID are required');
         }
-        await knex('favorites')
+        await db('favorites')
             .where({ user_id, recipe_id })
             .del();
         return res.json('Favorite removed successfully');
@@ -36,7 +36,12 @@ const getFavorites = async (req, res, db) => {
             return res.status(400).json('User ID is required');
         }
         const favorites = await db('favorites').where({ user_id: id });
-        return res.json(favorites);
+        // Map recipe_id -> id so front-end card components can use `id` directly
+        const mapped = favorites.map(fav => {
+            const { recipe_id, recipe_title, recipe_image, id, ...rest } = fav;
+            return { id: recipe_id, title: recipe_title, image: recipe_image};
+        });
+        return res.json(mapped);
     } catch (err) {
         console.error("Error fetching favorites: ", err);
         return res.status(400).json('Error getting favorites');
