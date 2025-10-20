@@ -20,7 +20,7 @@ const buildPgConnection = () => {
 
     // This makes sure pgadmin works and neon can connect
     if (process.env.DB_SSL === 'true') {
-    conn.ssl = { rejectUnauthorized: false };
+        conn.ssl = { rejectUnauthorized: false };
     }
 
     return conn;
@@ -47,6 +47,7 @@ app.use(express.urlencoded({ extended: true }));
 import spoon from "./controllers/spoonacular.js";
 import auth from "./controllers/auth.js";
 import database from "./controllers/database.js";
+import { authenticateToken } from './middleware/authMiddleware.js';
 
 app.get('/', (req, res) => {
     res.send("Server is running");
@@ -58,9 +59,9 @@ app.post('/auth/login', async (req, res) => auth.login(req, res, db, bcrypt));
 app.get('/api/get_random_recipes/:count', async (req, res) => spoon.getRandomRecipes(req, res));
 app.get('/api/get_recipe/:id', async (req, res) => spoon.getRecipeById(req, res));
 app.post("/api/search_recipe", async (req, res) => spoon.complexRecipeSearch(req, res));
-app.post("/db/get_favorites", async (req, res) => database.getFavorites(req, res, db));
-app.post("/db/add_favorite", async (req, res) => database.addFavorite(req, res, db));
-app.post("/db/remove_favorite", async (req, res) => database.removeFavorite(req, res, db));
+app.post("/db/get_favorites", authenticateToken, async (req, res) => database.getFavorites(req, res, db));
+app.post("/db/add_favorite", authenticateToken, async (req, res) => database.addFavorite(req, res, db));
+app.post("/db/remove_favorite", authenticateToken, async (req, res) => database.removeFavorite(req, res, db));
 
 app.listen(env.PORT, () => {
     console.log(`Server running on port ${env.PORT}`);
